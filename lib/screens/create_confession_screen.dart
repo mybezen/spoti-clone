@@ -38,6 +38,14 @@ class _CreateConfessionScreenState extends State<CreateConfessionScreen> {
 
     try {
       final results = await widget.spotifyService.searchTracks(query);
+
+      // Sort: prioritaskan lagu dengan preview URL
+      results.sort((a, b) {
+        if (a['previewUrl'] != null && b['previewUrl'] == null) return -1;
+        if (a['previewUrl'] == null && b['previewUrl'] != null) return 1;
+        return 0;
+      });
+
       setState(() {
         _searchResults = results;
       });
@@ -360,6 +368,23 @@ class _CreateConfessionScreenState extends State<CreateConfessionScreen> {
                     ),
                     onSubmitted: _searchTracks,
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline,
+                          size: 14, color: Colors.grey[500]),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          'Lagu populer biasanya punya preview. Lagu dengan badge hijau bisa diputar.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   if (_selectedTrack != null) ...[
                     const SizedBox(height: 16),
                     Container(
@@ -465,36 +490,87 @@ class _CreateConfessionScreenState extends State<CreateConfessionScreen> {
                           _searchResults.length > 8 ? 8 : _searchResults.length,
                       itemBuilder: (context, index) {
                         final track = _searchResults[index];
+                        final hasPreview = track['previewUrl'] != null;
+
                         return ListTile(
-                          leading: track['imageUrl'] != ''
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    track['imageUrl'],
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
+                          leading: Stack(
+                            children: [
+                              track['imageUrl'] != ''
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        track['imageUrl'],
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF282828),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.music_note),
+                                    ),
+                              if (hasPreview)
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1DB954),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: const Color(0xFF181818),
+                                          width: 2),
+                                    ),
+                                    child: const Icon(
+                                      Icons.play_arrow,
+                                      size: 12,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF282828),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(Icons.music_note),
                                 ),
+                            ],
+                          ),
                           title: Text(
                             track['name'],
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          subtitle: Text(
-                            track['artist'],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: Colors.grey[400]),
+                          subtitle: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  track['artist'],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.grey[400]),
+                                ),
+                              ),
+                              if (!hasPreview)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'No Preview',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                           trailing: const Icon(
                             Icons.add_circle_outline,

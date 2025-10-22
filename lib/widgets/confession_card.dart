@@ -208,28 +208,67 @@ class ConfessionCard extends StatelessWidget {
                       ),
                       
                       // Play Button
-                      IconButton(
-                        onPressed: () {
-                          if (track['previewUrl'] == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Preview tidak tersedia'),
-                                backgroundColor: Color(0xFF282828),
+                      Stack(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              if (track['previewUrl'] == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Row(
+                                      children: [
+                                        Icon(Icons.info_outline, color: Colors.white),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Preview tidak tersedia. Buka di Spotify untuk dengar full.',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: const Color(0xFF282828),
+                                    action: SnackBarAction(
+                                      label: 'BUKA',
+                                      textColor: Color(0xFF1DB954),
+                                      onPressed: () async {
+                                        final url = Uri.parse(track['spotifyUrl']);
+                                        if (await canLaunchUrl(url)) {
+                                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              audioPlayerService.playPauseTrack(
+                                track['previewUrl'],
+                                track['id'],
+                                onUpdate,
+                              );
+                            },
+                            icon: Icon(
+                              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                              color: track['previewUrl'] == null 
+                                  ? Colors.grey 
+                                  : const Color(0xFF1DB954),
+                              size: 40,
+                            ),
+                          ),
+                          if (track['previewUrl'] == null)
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            );
-                            return;
-                          }
-                          audioPlayerService.playPauseTrack(
-                            track['previewUrl'],
-                            track['id'],
-                            onUpdate,
-                          );
-                        },
-                        icon: Icon(
-                          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                          color: const Color(0xFF1DB954),
-                          size: 40,
-                        ),
+                            ),
+                        ],
                       ),
                       
                       // Spotify Link
