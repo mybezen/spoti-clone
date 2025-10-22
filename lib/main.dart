@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cuvang/spotify_clone.dart';
+import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'screens/home_screen.dart';
+import 'providers/confession_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,16 +13,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Spotify Clone - AmriGanteng',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.green,
-        scaffoldBackgroundColor: Colors.black,
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (_) => ConfessionProvider(),
+      child: MaterialApp(
+        title: 'Songfess',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF1DB954),
+            brightness: Brightness.dark,
+          ),
+          textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+          scaffoldBackgroundColor: const Color(0xFF121212),
+          useMaterial3: true,
+        ),
+        home: const HomeScreen(),
       ),
-      home: const SpotifyClone(),
     );
   }
 }
